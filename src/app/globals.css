@@ -1,0 +1,590 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────
+   Tailwind v4 Theme — CSS Variables
+───────────────────────────────────────────── */
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  /* Animation */
+  --animate-fade-in: fadeIn 0.2s ease-out;
+  --animate-slide-in: slideIn 0.25s ease-out;
+  --animate-pulse-glow: pulseGlow 2s infinite;
+}
+
+/* ─────────────────────────────────────────────
+   Keyframes
+───────────────────────────────────────────── */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(37, 211, 102, 0);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   CSS Root Variables — Light Mode
+───────────────────────────────────────────── */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #94a3b8;
+
+  --accent: #25d366;
+  --accent-hover: #128c7e;
+  --accent-subtle: rgba(37, 211, 102, 0.1);
+  --accent-text: #064e3b;
+
+  --border: #e2e8f0;
+  --border-subtle: #f1f5f9;
+
+  --card: #ffffff;
+  --card-hover: #f8fafc;
+
+  --sidebar: #0f172a;
+  --sidebar-text: #f8fafc;
+  --sidebar-hover: rgba(255, 255, 255, 0.08);
+
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --danger-subtle: rgba(239, 68, 68, 0.12);
+  --warning: #f59e0b;
+  --warning-subtle: rgba(245, 158, 11, 0.12);
+  --success: #10b981;
+  --success-subtle: rgba(16, 185, 129, 0.12);
+
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+  --shadow-glow: 0 0 20px rgba(37, 211, 102, 0.25);
+}
+
+/* ─────────────────────────────────────────────
+   CSS Root Variables — Dark Mode
+───────────────────────────────────────────── */
+.dark {
+  --bg-primary: #020617;
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #1e293b;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+
+  --accent: #25d366;
+  --accent-hover: #4ade80;
+  --accent-subtle: rgba(37, 211, 102, 0.12);
+  --accent-text: #86efac;
+
+  --border: #1e293b;
+  --border-subtle: #0f172a;
+
+  --card: #0f172a;
+  --card-hover: #1e293b;
+
+  --sidebar: #020617;
+  --sidebar-text: #f8fafc;
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+
+  --danger: #f87171;
+  --danger-hover: #ef4444;
+  --danger-subtle: rgba(248, 113, 113, 0.12);
+  --warning: #fbbf24;
+  --warning-subtle: rgba(251, 191, 36, 0.12);
+  --success: #34d399;
+  --success-subtle: rgba(52, 211, 153, 0.12);
+
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
+  --shadow-elevated: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(37, 211, 102, 0.15);
+}
+
+/* ─────────────────────────────────────────────
+   Base Reset
+───────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  /* margin: 0; */
+  /* padding: 0; */
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* ─────────────────────────────────────────────
+   Scrollbar
+───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ─────────────────────────────────────────────
+   Card utility
+───────────────────────────────────────────── */
+@utility card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* ─────────────────────────────────────────────
+   Button utilities
+───────────────────────────────────────────── */
+@utility btn-primary {
+  background-color: var(--accent);
+  color: #ffffff;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.125rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: var(--accent-hover);
+    box-shadow: var(--shadow-glow);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+      box-shadow: none;
+      background-color: var(--accent);
+    }
+  }
+}
+
+@utility btn-secondary {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.125rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: var(--card-hover);
+    border-color: var(--accent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@utility btn-danger {
+  background-color: var(--danger-subtle);
+  color: var(--danger);
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.125rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background-color: var(--danger);
+    color: #fff;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Input utilities
+───────────────────────────────────────────── */
+@utility input-field {
+  width: 100%;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.5625rem 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-family: "Inter", sans-serif;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
+  }
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Label
+───────────────────────────────────────────── */
+@utility label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
+  letter-spacing: 0.01em;
+}
+
+/* ─────────────────────────────────────────────
+   Table
+───────────────────────────────────────────── */
+@utility data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  thead {
+    background-color: var(--bg-tertiary);
+  }
+
+  thead th {
+    text-align: left;
+    padding: 0.625rem 1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.1s;
+  }
+
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  tbody tr:hover {
+    background-color: var(--card-hover);
+  }
+
+  tbody td {
+    padding: 0.75rem 1rem;
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Badge
+───────────────────────────────────────────── */
+@utility badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.175rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+@utility badge-success {
+  background: var(--success-subtle);
+  color: var(--success);
+}
+
+@utility badge-danger {
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+@utility badge-warning {
+  background: var(--warning-subtle);
+  color: var(--warning);
+}
+
+@utility badge-accent {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+/* ─────────────────────────────────────────────
+   Animation utilities
+───────────────────────────────────────────── */
+@utility animate-fade-in {
+  animation: fadeIn 0.2s ease-out both;
+}
+
+@utility animate-slide-in {
+  animation: slideIn 0.25s ease-out both;
+}
+
+@utility animate-pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+/* ─────────────────────────────────────────────
+   react-phone-input-2 — always-on theme via CSS vars
+───────────────────────────────────────────── */
+.phone-input-dark .react-tel-input .form-control {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 0.5rem !important;
+  width: 100% !important;
+  height: 44px !important;
+  font-size: 14px !important;
+  font-family: "Inter", sans-serif !important;
+  padding-left: 52px !important;
+}
+
+.phone-input-dark .react-tel-input .flag-dropdown {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border) !important;
+  border-radius: 0.5rem 0 0 0.5rem !important;
+}
+
+.phone-input-dark .react-tel-input .selected-flag {
+  background-color: transparent !important;
+  padding-left: 10px;
+}
+
+.phone-input-dark .react-tel-input .selected-flag:hover,
+.phone-input-dark .react-tel-input .selected-flag:focus,
+.phone-input-dark .react-tel-input .flag-dropdown.open .selected-flag {
+  background-color: var(--bg-secondary) !important;
+}
+
+.phone-input-dark .react-tel-input .country-list {
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: var(--shadow-elevated) !important;
+  color: var(--text-primary) !important;
+  margin-top: 4px;
+}
+
+.phone-input-dark .react-tel-input .country-list .country:hover,
+.phone-input-dark .react-tel-input .country-list .country.highlight {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.phone-input-dark .react-tel-input .country-list .country-name,
+.phone-input-dark .react-tel-input .country-list .dial-code {
+  color: var(--text-primary) !important;
+}
+
+.phone-input-dark .react-tel-input .search {
+  background-color: var(--card) !important;
+  padding: 8px !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.phone-input-dark .react-tel-input .search-box {
+  background-color: var(--bg-tertiary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.375rem !important;
+  color: var(--text-primary) !important;
+  width: 100% !important;
+  padding: 6px 10px !important;
+  font-family: "Inter", sans-serif !important;
+  font-size: 13px !important;
+}
+
+.phone-input-dark .react-tel-input .search-box::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* ─────────────────────────────────────────────
+   react-select — theme via CSS vars
+───────────────────────────────────────────── */
+.react-select-dark .react-select__control {
+  background-color: var(--bg-tertiary) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+  min-height: 44px !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+.react-select-dark .react-select__control:hover {
+  border-color: var(--accent) !important;
+}
+
+.react-select-dark .react-select__control--is-focused {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-subtle) !important;
+}
+
+.react-select-dark .react-select__menu {
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.625rem !important;
+  box-shadow: var(--shadow-elevated) !important;
+  margin-top: 4px !important;
+  overflow: hidden;
+}
+
+.react-select-dark .react-select__menu-list {
+  padding: 4px !important;
+}
+
+.react-select-dark .react-select__option {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+  border-radius: 0.375rem !important;
+  font-size: 0.875rem !important;
+  padding: 8px 10px !important;
+  cursor: pointer;
+}
+
+.react-select-dark .react-select__option--is-focused {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.react-select-dark .react-select__option--is-selected {
+  background-color: var(--accent-subtle) !important;
+  color: var(--accent) !important;
+  font-weight: 500 !important;
+}
+
+.react-select-dark .react-select__multi-value {
+  background-color: var(--accent-subtle) !important;
+  border-radius: 4px !important;
+  margin: 2px !important;
+}
+
+.react-select-dark .react-select__multi-value__label {
+  color: var(--accent) !important;
+  font-size: 12px !important;
+  padding: 2px 6px !important;
+  font-weight: 500 !important;
+}
+
+.react-select-dark .react-select__multi-value__remove {
+  color: var(--accent) !important;
+  cursor: pointer;
+  border-radius: 0 4px 4px 0 !important;
+}
+
+.react-select-dark .react-select__multi-value__remove:hover {
+  background-color: var(--danger) !important;
+  color: #fff !important;
+}
+
+.react-select-dark .react-select__input-container {
+  color: var(--text-primary) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.react-select-dark .react-select__placeholder {
+  color: var(--text-muted) !important;
+  font-size: 0.875rem !important;
+}
+
+.react-select-dark .react-select__single-value {
+  color: var(--text-primary) !important;
+}
+
+.react-select-dark .react-select__indicator-separator {
+  background-color: var(--border) !important;
+}
+
+.react-select-dark .react-select__dropdown-indicator,
+.react-select-dark .react-select__clear-indicator {
+  color: var(--text-muted) !important;
+}
+
+.react-select-dark .react-select__dropdown-indicator:hover,
+.react-select-dark .react-select__clear-indicator:hover {
+  color: var(--text-primary) !important;
+}
+
+.react-select-dark .react-select__value-container {
+  padding: 4px 8px !important;
+  gap: 2px;
+  flex-wrap: wrap;
+}
