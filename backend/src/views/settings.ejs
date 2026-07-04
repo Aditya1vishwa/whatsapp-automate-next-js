@@ -1,0 +1,192 @@
+<%- include('./layout') %>
+
+<div class="page-header">
+  <h1 class="page-title">Settings</h1>
+  <p class="page-subtitle">Configure the payment verification system</p>
+</div>
+
+<% if (saved) { %>
+<div class="alert d-flex align-items-center gap-2 mb-4" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:12px;color:#10b981;">
+  <i class="bi bi-check-circle-fill"></i> Settings saved successfully!
+</div>
+<% } %>
+
+<form action="/api/settings" method="POST" id="settingsForm">
+<div class="row g-4">
+
+  <!-- WhatsApp Settings -->
+  <div class="col-md-6">
+    <div class="table-card h-100">
+      <div class="table-card-header">
+        <span class="table-card-title"><i class="bi bi-whatsapp me-2 text-success"></i>WhatsApp</span>
+      </div>
+      <div class="p-4">
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Target Group IDs</label>
+          <textarea name="targetGroups" class="form-control" rows="3"
+            placeholder="One group ID per line, or leave blank to monitor all groups..."
+            style="font-family:monospace;font-size:0.82rem;"><%= (settings.targetGroups||[]).join('\n') %></textarea>
+          <div class="form-text text-muted">Group IDs look like: 1234567890@g.us</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Image Storage Path</label>
+          <input type="text" name="imagePath" class="form-control" value="<%= settings.imagePath || 'uploads/whatsapp' %>">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Image Retention (days)</label>
+          <input type="number" name="retentionDays" class="form-control" value="<%= settings.retentionDays || 30 %>" min="1" max="365">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gmail Settings -->
+  <div class="col-md-6">
+    <div class="table-card h-100">
+      <div class="table-card-header">
+        <span class="table-card-title"><i class="bi bi-envelope-fill me-2 text-info"></i>Gmail</span>
+      </div>
+      <div class="p-4">
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Gmail Search Query</label>
+          <input type="text" name="gmailQuery" class="form-control" value="<%= settings.gmailQuery || '' %>"
+            placeholder="subject:payment OR subject:UTR">
+          <div class="form-text text-muted">Standard Gmail search operators supported</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Polling Interval (minutes)</label>
+          <input type="number" name="pollingInterval" class="form-control" value="<%= settings.pollingInterval || 5 %>" min="1" max="60">
+          <div class="form-text text-muted">How often to check for new payment emails</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OCR & Verification Settings -->
+  <div class="col-md-6">
+    <div class="table-card h-100">
+      <div class="table-card-header">
+        <span class="table-card-title"><i class="bi bi-cpu-fill me-2" style="color:#6366f1;"></i>OCR & Verification</span>
+      </div>
+      <div class="p-4">
+        <div class="mb-4">
+          <label class="form-label fw-semibold">OCR Provider</label>
+          <select name="ocrProvider" class="form-select">
+            <option value="gemini" <%= settings.ocrProvider === 'gemini' ? 'selected' : '' %>>Gemini Vision (Recommended)</option>
+            <option value="tesseract" <%= settings.ocrProvider === 'tesseract' ? 'selected' : '' %>>Tesseract (Local)</option>
+          </select>
+          <div class="form-text text-muted">Gemini uses your existing API key. Tesseract requires local install.</div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Date Match Window (±minutes)</label>
+          <input type="number" name="timeWindowMinutes" class="form-control" value="<%= settings.timeWindowMinutes || 15 %>" min="1" max="1440">
+          <div class="form-text text-muted">How far apart two transactions can be to be considered a time-based match</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold d-flex align-items-center gap-3">
+            Auto-Verify on Match
+            <div class="form-check form-switch ms-auto mb-0">
+              <input class="form-check-input" type="checkbox" name="autoVerify" value="true" id="autoVerifyToggle"
+                <%= settings.autoVerify ? 'checked' : '' %>>
+              <label class="form-check-label" for="autoVerifyToggle"></label>
+            </div>
+          </label>
+          <div class="form-text text-muted">Auto-verify when UTR confidence ≥ 70%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Environment Info -->
+  <div class="col-md-6">
+    <div class="table-card h-100">
+      <div class="table-card-header">
+        <span class="table-card-title"><i class="bi bi-info-circle-fill me-2 text-warning"></i>Environment Info</span>
+      </div>
+      <div class="p-4">
+        <table class="table table-sm">
+          <tbody>
+            <tr>
+              <td class="text-muted">Gmail Client ID</td>
+              <td><code class="small text-info"><%= process.env.GMAIL_CLIENT_ID || process.env.GOOGLE_CLIENt_KEY ? '✓ Set' : '✗ Missing' %></code></td>
+            </tr>
+            <tr>
+              <td class="text-muted">Gmail Refresh Token</td>
+              <td><code class="small <%= process.env.GMAIL_REFRESH_TOKEN ? 'text-success' : 'text-danger' %>"><%= process.env.GMAIL_REFRESH_TOKEN ? '✓ Set' : '✗ Missing — Login required' %></code></td>
+            </tr>
+            <tr>
+              <td class="text-muted">Gemini API Key</td>
+              <td><code class="small text-info"><%= process.env.GEMINI_API_KEY ? '✓ Set' : '✗ Missing' %></code></td>
+            </tr>
+            <tr>
+              <td class="text-muted">Session Secret</td>
+              <td><code class="small text-info"><%= process.env.SESSION_SECRET ? '✓ Set' : '✗ Missing' %></code></td>
+            </tr>
+            <tr>
+              <td class="text-muted">Node ENV</td>
+              <td><code class="small text-info"><%= process.env.NODE_ENV || 'development' %></code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="mt-3">
+          <div class="alert" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;color:#fbbf24;font-size:0.82rem;">
+            <i class="bi bi-key-fill me-2"></i>
+            To set up Gmail access, <a href="/auth/google" class="text-warning">login with Google</a> to obtain a refresh token.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Button -->
+<div class="d-flex justify-content-end mt-4 gap-3">
+  <button type="reset" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset
+  </button>
+  <button type="submit" class="btn btn-primary px-4" id="saveBtn">
+    <i class="bi bi-check-circle-fill me-2"></i>Save Settings
+  </button>
+</div>
+</form>
+
+<script>
+document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('saveBtn');
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+  btn.disabled = true;
+
+  // Convert textarea to comma-separated for targetGroups
+  const form = e.target;
+  const groups = form.targetGroups.value.split('\n').map(g => g.trim()).filter(Boolean);
+  
+  const data = new URLSearchParams(new FormData(form));
+  // Remove existing targetGroups and re-add as comma list
+  data.delete('targetGroups');
+  data.append('targetGroups', groups.join(','));
+
+  try {
+    const res = await fetch('/api/settings', {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      showToast('Settings saved!', 'success');
+      setTimeout(() => window.location.href = '/settings?saved=1', 500);
+    } else {
+      const d = await res.json();
+      showToast(d.message || 'Save failed', 'error');
+    }
+  } catch(err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Save Settings';
+  }
+});
+</script>
+
+<%- include('./partials/layout-end') %>

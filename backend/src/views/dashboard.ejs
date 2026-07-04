@@ -1,0 +1,157 @@
+<%- include('./layout') %>
+
+<div class="page-header d-flex align-items-center justify-content-between">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Real-time payment verification overview</p>
+  </div>
+  <button class="btn btn-primary" onclick="refreshStats()" id="refreshBtn">
+    <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+  </button>
+</div>
+
+<!-- Stats Row 1 -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1;"><i class="bi bi-envelope-fill"></i></div>
+      <div class="stat-value text-white"><%= stats.totalEmails.toLocaleString() %></div>
+      <div class="stat-label">Total Emails</div>
+      <div class="stat-change text-success"><i class="bi bi-arrow-up"></i> <%= stats.todayEmails %> today</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="bi bi-whatsapp"></i></div>
+      <div class="stat-value text-white"><%= stats.totalWhatsapp.toLocaleString() %></div>
+      <div class="stat-label">WhatsApp Messages</div>
+      <div class="stat-change text-success"><i class="bi bi-arrow-up"></i> <%= stats.todayWhatsapp %> today</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="bi bi-patch-check-fill"></i></div>
+      <div class="stat-value" style="color:#10b981;"><%= stats.verified.toLocaleString() %></div>
+      <div class="stat-label">Verified</div>
+      <div class="stat-change" style="color:#10b981;"><i class="bi bi-check-circle"></i> Auto-matched</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-value" style="color:#f59e0b;"><%= stats.pending.toLocaleString() %></div>
+      <div class="stat-label">Pending</div>
+      <a href="/verification?status=PENDING" class="stat-change text-warning text-decoration-none"><i class="bi bi-arrow-right"></i> Review now</a>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Row 2 -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="bi bi-x-circle-fill"></i></div>
+      <div class="stat-value" style="color:#ef4444;"><%= stats.unverified.toLocaleString() %></div>
+      <div class="stat-label">Unverified</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1;"><i class="bi bi-envelope-open-fill"></i></div>
+      <div class="stat-value text-white"><%= stats.todayEmails %></div>
+      <div class="stat-label">Today's Emails</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="bi bi-chat-dots-fill"></i></div>
+      <div class="stat-value text-white"><%= stats.todayWhatsapp %></div>
+      <div class="stat-label">Today's WhatsApp</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1;"><i class="bi bi-graph-up-arrow"></i></div>
+      <div class="stat-value" style="color:#a5b4fc;"><%= stats.successRate %>%</div>
+      <div class="stat-label">Success Rate</div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+  <div class="col-md-8">
+    <div class="table-card">
+      <div class="table-card-header"><span class="table-card-title"><i class="bi bi-bar-chart-fill me-2" style="color:#6366f1;"></i>Email vs WhatsApp — Last 30 Days</span></div>
+      <div class="p-4"><div class="chart-container"><canvas id="activityChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="table-card">
+      <div class="table-card-header"><span class="table-card-title"><i class="bi bi-pie-chart-fill me-2" style="color:#10b981;"></i>Verification Status</span></div>
+      <div class="p-4"><div class="chart-container"><canvas id="statusChart"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Verifications -->
+<div class="table-card mb-4">
+  <div class="table-card-header">
+    <span class="table-card-title"><i class="bi bi-clock-history me-2" style="color:#f59e0b;"></i>Recent Verifications</span>
+    <a href="/verification" class="btn btn-sm btn-outline-secondary">View All <i class="bi bi-arrow-right"></i></a>
+  </div>
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead>
+        <tr><th>WA Sender</th><th>UTR (WA)</th><th>Email Sender</th><th>UTR (Email)</th><th>Confidence</th><th>Status</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        <% if(stats.recentVerifications.length===0){ %><tr><td colspan="7" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>No verifications yet</td></tr><% } %>
+        <% stats.recentVerifications.forEach(v=>{ %>
+        <tr>
+          <td><div class="fw-semibold"><%= v.whatsappId?.senderName||'—' %></div><div class="text-muted small"><%= v.whatsappId?.groupName||'' %></div></td>
+          <td><code class="text-info small"><%= v.whatsappId?.utr||'—' %></code></td>
+          <td><div class="fw-semibold"><%= v.emailId?.sender||'—' %></div></td>
+          <td><code class="text-info small"><%= v.emailId?.utr||'—' %></code></td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="confidence-bar"><span class="confidence-fill" style="width:<%= v.confidence %>%;background:<%= v.confidence>=70?'#10b981':v.confidence>=40?'#f59e0b':'#ef4444' %>;"></span></span>
+              <small><%= v.confidence %>%</small>
+            </div>
+          </td>
+          <td>
+            <% if(v.status==='VERIFIED'){ %><span class="status-badge-verified"><i class="bi bi-check-circle-fill"></i>Verified</span>
+            <% }else if(v.status==='UNVERIFIED'){ %><span class="status-badge-unverified"><i class="bi bi-x-circle-fill"></i>Unverified</span>
+            <% }else{ %><span class="status-badge-pending"><i class="bi bi-clock-fill"></i>Pending</span><% } %>
+          </td>
+          <td class="text-muted small"><%= new Date(v.createdAt).toLocaleDateString() %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const chartData = <%- JSON.stringify(stats.chartData) %>;
+new Chart(document.getElementById('activityChart'),{
+  type:'bar',
+  data:{labels:chartData.labels,datasets:[{label:'Emails',data:chartData.emailData,backgroundColor:'rgba(99,102,241,0.7)',borderRadius:6},{label:'WhatsApp',data:chartData.waData,backgroundColor:'rgba(16,185,129,0.7)',borderRadius:6}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9ca3af',boxRadius:4}}},scales:{x:{ticks:{color:'#6b7280',maxTicksLimit:10},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#6b7280'},grid:{color:'rgba(255,255,255,0.05)'},beginAtZero:true}}}
+});
+new Chart(document.getElementById('statusChart'),{
+  type:'doughnut',
+  data:{labels:['Verified','Pending','Unverified'],datasets:[{data:[<%= stats.verified %>,<%= stats.pending %>,<%= stats.unverified %>],backgroundColor:['rgba(16,185,129,0.8)','rgba(245,158,11,0.8)','rgba(239,68,68,0.8)'],borderColor:['#10b981','#f59e0b','#ef4444'],borderWidth:2,hoverOffset:8}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{position:'bottom',labels:{color:'#9ca3af',padding:16,boxRadius:4}}}}
+});
+async function refreshStats(){
+  const btn=document.getElementById('refreshBtn');
+  btn.innerHTML='<span class="spinner-border spinner-border-sm me-2"></span>Refreshing...';btn.disabled=true;
+  try{await fetch('/api/dashboard');showToast('Stats refreshed!','success');setTimeout(()=>location.reload(),500);}
+  catch(e){showToast('Refresh failed','error');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="bi bi-arrow-clockwise me-2"></i>Refresh';}
+}
+</script>
+
+<%- include('./partials/layout-end') %>

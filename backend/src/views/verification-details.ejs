@@ -1,0 +1,219 @@
+<%- include('./layout') %>
+
+<div class="page-header d-flex align-items-center gap-3">
+  <a href="/verification" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h1 class="page-title">Verification Details</h1>
+    <p class="page-subtitle">ID: <code class="text-info"><%= verification._id %></code></p>
+  </div>
+  <div class="ms-auto d-flex gap-2">
+    <% if (verification.status !== 'VERIFIED') { %>
+    <button class="btn btn-success" onclick="manualVerify('<%= verification._id %>')">
+      <i class="bi bi-check-circle-fill me-2"></i>Verify
+    </button>
+    <% } %>
+    <% if (verification.status === 'VERIFIED') { %>
+    <button class="btn btn-warning" onclick="manualUnverify('<%= verification._id %>')">
+      <i class="bi bi-x-circle-fill me-2"></i>Unverify
+    </button>
+    <% } %>
+    <button class="btn btn-danger" onclick="deleteVerification('<%= verification._id %>')">
+      <i class="bi bi-trash-fill me-2"></i>Delete
+    </button>
+  </div>
+</div>
+
+<!-- Status Banner -->
+<div class="table-card mb-4 p-4">
+  <div class="row align-items-center">
+    <div class="col-md-4 text-center">
+      <% if (verification.status === 'VERIFIED') { %>
+        <div style="font-size:3rem;color:#10b981;"><i class="bi bi-patch-check-fill"></i></div>
+        <div class="fw-bold fs-5 text-success mt-2">VERIFIED</div>
+      <% } else if (verification.status === 'UNVERIFIED') { %>
+        <div style="font-size:3rem;color:#ef4444;"><i class="bi bi-patch-exclamation-fill"></i></div>
+        <div class="fw-bold fs-5 text-danger mt-2">UNVERIFIED</div>
+      <% } else { %>
+        <div style="font-size:3rem;color:#f59e0b;"><i class="bi bi-clock-fill"></i></div>
+        <div class="fw-bold fs-5 text-warning mt-2">PENDING</div>
+      <% } %>
+    </div>
+    <div class="col-md-4 text-center">
+      <div class="text-muted small mb-1">Confidence Score</div>
+      <div style="font-size:2.5rem;font-weight:800;color:<%= verification.confidence>=70?'#10b981':verification.confidence>=40?'#f59e0b':'#ef4444' %>">
+        <%= verification.confidence %>%
+      </div>
+      <div class="text-muted small">Matched: <%= (verification.matchedFields||[]).join(', ') || 'none' %></div>
+    </div>
+    <div class="col-md-4 text-center">
+      <div class="text-muted small mb-1">Verified By</div>
+      <div class="fw-semibold"><%= verification.verifiedBy || '—' %></div>
+      <div class="text-muted small"><%= verification.verifiedAt ? new Date(verification.verifiedAt).toLocaleString() : 'Not yet verified' %></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- WhatsApp Column -->
+  <div class="col-md-6">
+    <div class="table-card h-100">
+      <div class="table-card-header">
+        <span class="table-card-title"><i class="bi bi-whatsapp me-2 text-success"></i>WhatsApp Payment</span>
+      </div>
+      <div class="p-4">
+        <% const wa = verification.whatsappId; %>
+        <% if (wa) { %>
+          <!-- Screenshot -->
+          <% if (wa.imageUrl || wa.imagePath) { %>
+          <div class="text-center mb-4">
+            <img src="<%= wa.imageUrl || '' %>" class="img-fluid rounded-3"
+                 style="max-height:280px;border:1px solid var(--border-color);cursor:pointer;"
+                 onclick="viewImage(this.src)" alt="Payment screenshot"
+                 onerror="this.parentElement.innerHTML='<div class=\'text-muted text-center\'>Image not available</div>'">
+          </div>
+          <% } %>
+
+          <table class="table table-sm mb-3">
+            <tbody>
+              <tr><td class="text-muted">Sender</td><td class="fw-semibold"><%= wa.senderName || '—' %></td></tr>
+              <tr><td class="text-muted">Phone</td><td><%= wa.senderNumber || '—' %></td></tr>
+              <tr><td class="text-muted">Group</td><td><%= wa.groupName || 'Direct' %></td></tr>
+              <tr><td class="text-muted">UTR</td><td><code class="text-info"><%= wa.utr || '—' %></code></td></tr>
+              <tr><td class="text-muted">Amount</td><td class="text-success fw-bold"><%= wa.amount ? '₹' + wa.amount.toLocaleString() : '—' %></td></tr>
+              <tr><td class="text-muted">Caption</td><td class="small"><%= wa.caption || '—' %></td></tr>
+              <tr><td class="text-muted">Received</td><td class="small"><%= wa.receivedAt ? new Date(wa.receivedAt).toLocaleString() : '—' %></td></tr>
+            </tbody>
+          </table>
+
+          <!-- OCR Text -->
+          <% if (wa.ocrText) { %>
+          <div>
+            <div class="text-muted small mb-2"><i class="bi bi-file-text me-1"></i>OCR Extracted Text</div>
+            <pre class="p-3 rounded small" style="background:var(--bg-base);white-space:pre-wrap;max-height:200px;overflow-y:auto;font-size:0.75rem;color:#e2e8f0;"><%= wa.ocrText %></pre>
+          </div>
+          <% } %>
+        <% } else { %>
+          <div class="text-muted text-center py-4">No WhatsApp record linked</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Column -->
+  <div class="col-md-6">
+    <div class="table-card h-100">
+      <div class="table-card-header">
+        <span class="table-card-title"><i class="bi bi-envelope-fill me-2 text-info"></i>Gmail Email</span>
+      </div>
+      <div class="p-4">
+        <% const email = verification.emailId; %>
+        <% if (email) { %>
+          <table class="table table-sm mb-3">
+            <tbody>
+              <tr><td class="text-muted">Sender</td><td class="fw-semibold"><%= email.sender || '—' %></td></tr>
+              <tr><td class="text-muted">Email</td><td class="small"><%= email.senderEmail || '—' %></td></tr>
+              <tr><td class="text-muted">Subject</td><td class="small"><%= email.subject || '—' %></td></tr>
+              <tr><td class="text-muted">UTR</td><td><code class="text-info"><%= email.utr || '—' %></code></td></tr>
+              <tr><td class="text-muted">Amount</td><td class="text-success fw-bold"><%= email.amount ? '₹' + email.amount.toLocaleString() : '—' %></td></tr>
+              <tr><td class="text-muted">Received</td><td class="small"><%= email.receivedAt ? new Date(email.receivedAt).toLocaleString() : '—' %></td></tr>
+            </tbody>
+          </table>
+
+          <% if (email.body) { %>
+          <div>
+            <div class="text-muted small mb-2"><i class="bi bi-envelope-open me-1"></i>Email Body</div>
+            <div class="p-3 rounded small" style="background:var(--bg-base);max-height:250px;overflow-y:auto;font-size:0.78rem;color:#e2e8f0;white-space:pre-wrap;"><%= email.body.substring(0, 2000) %></div>
+          </div>
+          <% } %>
+        <% } else { %>
+          <div class="text-muted text-center py-4">
+            <i class="bi bi-envelope-x fs-2 d-block mb-2"></i>
+            No email matched yet
+            <br><small>Run the matching engine or manually link an email</small>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Timeline -->
+<div class="table-card mt-4">
+  <div class="table-card-header">
+    <span class="table-card-title"><i class="bi bi-clock-history me-2" style="color:#6366f1;"></i>Verification Timeline</span>
+  </div>
+  <div class="p-4">
+    <% if ((verification.timeline||[]).length === 0) { %>
+      <p class="text-muted">No timeline events recorded.</p>
+    <% } %>
+    <ul class="timeline">
+      <% (verification.timeline||[]).forEach((event, i) => { %>
+      <li class="timeline-item">
+        <div class="timeline-dot" style="background:<%= event.action==='AUTO_VERIFIED'||event.action==='MANUALLY_VERIFIED'?'#10b981':event.action==='MANUALLY_UNVERIFIED'?'#ef4444':'#6366f1' %>;">
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-action">
+            <% if (event.action==='AUTO_VERIFIED') { %><span class="text-success"><i class="bi bi-robot me-1"></i>Auto Verified</span>
+            <% } else if (event.action==='MANUALLY_VERIFIED') { %><span class="text-success"><i class="bi bi-person-check me-1"></i>Manually Verified</span>
+            <% } else if (event.action==='MANUALLY_UNVERIFIED') { %><span class="text-danger"><i class="bi bi-person-x me-1"></i>Unverified</span>
+            <% } else if (event.action==='AUTO_MATCHED') { %><span class="text-info"><i class="bi bi-link-45deg me-1"></i>Auto Matched</span>
+            <% } else { %><span class="text-muted"><%= event.action %></span><% } %>
+          </div>
+          <div class="timeline-meta">
+            <%= event.at ? new Date(event.at).toLocaleString() : '' %>
+            <% if (event.by) { %> · by <%= event.by %><% } %>
+            <% if (event.note) { %><br><span class="text-muted"><%= event.note %></span><% } %>
+          </div>
+        </div>
+      </li>
+      <% }) %>
+    </ul>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content" style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;">
+      <div class="modal-header border-0">
+        <h5 class="modal-title">Payment Screenshot</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center p-3">
+        <img id="imageModalSrc" src="" class="img-fluid rounded" alt="" style="max-height:80vh;">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function viewImage(src) {
+  document.getElementById('imageModalSrc').src = src;
+  new bootstrap.Modal(document.getElementById('imageModal')).show();
+}
+async function manualVerify(id) {
+  try {
+    const res = await fetch('/api/verify/' + id, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    if (res.ok) { showToast('Verified!', 'success'); setTimeout(()=>location.reload(),800); }
+    else { const d = await res.json(); showToast(d.message||'Error', 'error'); }
+  } catch(e) { showToast('Error', 'error'); }
+}
+async function manualUnverify(id) {
+  if (!confirm('Mark as unverified?')) return;
+  try {
+    const res = await fetch('/api/unverify/' + id, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    if (res.ok) { showToast('Unverified', 'warning'); setTimeout(()=>location.reload(),800); }
+  } catch(e) { showToast('Error', 'error'); }
+}
+async function deleteVerification(id) {
+  if (!confirm('Delete this verification?')) return;
+  try {
+    const res = await fetch('/api/verification/' + id, { method: 'DELETE' });
+    if (res.ok) { showToast('Deleted', 'success'); setTimeout(()=>window.location.href='/verification',800); }
+  } catch(e) { showToast('Error', 'error'); }
+}
+</script>
+
+<%- include('./partials/layout-end') %>

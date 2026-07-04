@@ -1,0 +1,92 @@
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-inner">
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="/dashboard" class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>">
+            <i class="bi bi-grid-fill nav-icon"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/verification" class="nav-link <%= activePage === 'verification' ? 'active' : '' %>">
+            <i class="bi bi-patch-check-fill nav-icon"></i>
+            <span>Verifications</span>
+            <span class="nav-badge" id="pendingBadge">—</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-section-label">Data Sources</div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="/whatsapp" class="nav-link <%= activePage === 'whatsapp' ? 'active' : '' %>">
+            <i class="bi bi-whatsapp nav-icon"></i>
+            <span>WhatsApp</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/emails" class="nav-link <%= activePage === 'emails' ? 'active' : '' %>">
+            <i class="bi bi-envelope-fill nav-icon"></i>
+            <span>Emails</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-section-label">Admin</div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a href="/settings" class="nav-link <%= activePage === 'settings' ? 'active' : '' %>">
+            <i class="bi bi-gear-fill nav-icon"></i>
+            <span>Settings</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin/whatsapp-qr" class="nav-link">
+            <i class="bi bi-qr-code nav-icon"></i>
+            <span>WhatsApp QR</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="/logout" class="nav-link text-danger-soft">
+            <i class="bi bi-box-arrow-right nav-icon"></i>
+            <span>Logout</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <% if (user && user.picture) { %>
+          <img src="<%= user.picture %>" class="sidebar-avatar" alt="">
+        <% } else { %>
+          <div class="sidebar-avatar-placeholder"><i class="bi bi-person-fill"></i></div>
+        <% } %>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name"><%= user ? user.name : 'Admin' %></div>
+          <div class="sidebar-user-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<script>
+// Load pending badge count
+async function loadPendingCount() {
+  try {
+    const res = await fetch('/api/dashboard');
+    const data = await res.json();
+    const badge = document.getElementById('pendingBadge');
+    if (badge && data.data) {
+      badge.textContent = data.data.pending || 0;
+      badge.style.display = data.data.pending > 0 ? 'inline-flex' : 'none';
+    }
+  } catch(e) {}
+}
+loadPendingCount();
+</script>
